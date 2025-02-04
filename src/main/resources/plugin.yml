@@ -1,0 +1,5 @@
+name: DyeableCauldrons
+author: Archybald
+version: '1.0-SNAPSHOT'
+main: de.archybald.dyeableCauldrons.DyeableCauldronsPlugin
+api-version: '1.21'
