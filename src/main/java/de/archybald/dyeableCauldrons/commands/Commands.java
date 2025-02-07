@@ -9,6 +9,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.persistence.ListPersistentDataType;
 import org.bukkit.persistence.PersistentDataContainer;
 
+import java.util.List;
 import java.util.Objects;
 
 public class Commands {
@@ -18,23 +19,20 @@ public class Commands {
         final NamespacedKey key = DyeManager.getInstance().getDyeKey();
         final ListPersistentDataType<String, DyedCauldron> dataType = DyeManager.getInstance().getDataType();
         final PersistentDataContainer container = player.getChunk().getPersistentDataContainer();
+        final List<DyedCauldron> list = container.get(key, dataType);
 
-
-        if(!container.has(key, dataType)) {
+        if (list == null || list.isEmpty()) {
             player.sendMessage(Component.text("No dyed cauldrons in this chunk"));
-            System.out.println("No dyed cauldrons in this chunk");
             return;
         }
 
-        Objects.requireNonNull(container.get(key, dataType))
-                .forEach(dc -> {
-                    final Entity entity = player.getWorld().getEntity(dc.uuid());
-                    if(entity != null) {
-                        entity.remove();
-                    }
-                });
+        final int count = list.size();
+        list.stream()
+                .map(dc -> player.getWorld().getEntity(dc.uuid()))
+                .filter(Objects::nonNull)
+                .forEach(Entity::remove);
 
         container.remove(DyeManager.getInstance().getDyeKey());
-        player.sendMessage(Component.text("Removed all dyed cauldrons in this chunk"));
+        player.sendMessage(Component.text("Removed " + count + " dyed cauldrons in this chunk"));
     }
 }

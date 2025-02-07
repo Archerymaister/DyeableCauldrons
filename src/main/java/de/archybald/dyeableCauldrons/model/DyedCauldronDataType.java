@@ -50,7 +50,7 @@ public class DyedCauldronDataType implements PersistentDataType<String, DyedCaul
      */
     @Override
     public @NotNull String toPrimitive(@NotNull DyedCauldron complex, @NotNull PersistentDataAdapterContext context) {
-        return complex.location().getWorld() + ";" +
+        return complex.location().getWorld().getName() + ";" +
                 complex.location().getBlockX() + ";" +
                 complex.location().getBlockY() + ";" +
                 complex.location().getBlockZ() + ";" +

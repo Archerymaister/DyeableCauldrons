@@ -45,24 +45,18 @@ public class DyeManager {
         final int waterLevel = ((Levelled) cauldron.getBlockData()).getLevel();
         final Chunk chunk = cauldron.getChunk();
         final Location dyeLocation = cauldron.getLocation().clone().add(0, dyeHeights.get(waterLevel), 0);
-        List<DyedCauldron> dyedCauldrons = new ArrayList<>(Objects.requireNonNull(chunk.getPersistentDataContainer().get(
-                dyeKey,
-                PersistentDataType.LIST.listTypeFrom(DyedCauldronDataType.getInstance()))));
-
-        System.out.println(dyedCauldrons);
+        List<DyedCauldron> dyedCauldrons = new ArrayList<>(Optional.ofNullable(chunk.getPersistentDataContainer().get(dyeKey, getDataType())).orElse(List.of()));
 
         if(dyedCauldrons.isEmpty()) {
-            System.out.println("No dyed cauldrons found");
             dyedCauldrons = new ArrayList<>(List.of());
         }
 
         final Optional<DyedCauldron> existingCauldron = dyedCauldrons.stream().filter(dc -> dc.location().equals(cauldron.getLocation())).findFirst();
 
         if(existingCauldron.isPresent()) {
-            System.out.println("Cauldron redyed");
             dyedCauldrons.remove(existingCauldron.get());
             Objects.requireNonNull(dyeLocation.getWorld().getEntity(existingCauldron.get().uuid())).remove();
-            color = color.mixColors(existingCauldron.get().color());
+            color = color.mixColors(existingCauldron.get().color()).setAlpha(128);
         }
 
         final Color finalColor = color;

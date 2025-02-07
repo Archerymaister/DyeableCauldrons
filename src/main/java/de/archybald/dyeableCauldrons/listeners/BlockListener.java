@@ -1,6 +1,7 @@
 package de.archybald.dyeableCauldrons.listeners;
 
 import de.archybald.dyeableCauldrons.managers.DyeManager;
+import net.kyori.adventure.text.Component;
 import org.bukkit.Color;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -25,24 +26,27 @@ public class BlockListener implements Listener {
 
         final Block block = event.getClickedBlock();
         if(block == null) {
-            System.out.println("Clicked block is null");
             return;
         }
 
         final ItemStack item = event.getItem();
 
         if(item == null) {
-            System.out.println("Item is null");
             return;
         }
 
         if(!item.getType().name().endsWith("_DYE")){
-            System.out.println("Item is not a dye");
             return;
         }
 
         if(block.getType() != Material.WATER_CAULDRON) {
-            System.out.println("Block is not a water cauldron");
+
+            if (block.getType() == Material.CAULDRON
+                    || block.getType() == Material.LAVA_CAULDRON
+                    || block.getType() == Material.POWDER_SNOW_CAULDRON) {
+                event.getPlayer().sendMessage(Component.text("You can only dye water cauldrons"));
+            }
+
             return;
         }
 
