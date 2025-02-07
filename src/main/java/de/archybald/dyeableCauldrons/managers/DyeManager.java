@@ -11,6 +11,7 @@ import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.Levelled;
 import org.bukkit.entity.TextDisplay;
+import org.bukkit.persistence.ListPersistentDataType;
 import org.bukkit.persistence.PersistentDataType;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Matrix4f;
@@ -24,6 +25,7 @@ import java.util.Optional;
 public class DyeManager {
     private static DyeManager instance;
     private final NamespacedKey dyeKey = new NamespacedKey("dyeable-cauldrons", "dyed-cauldron");
+    private final ListPersistentDataType<String, DyedCauldron> dataType = PersistentDataType.LIST.listTypeFrom(DyedCauldronDataType.getInstance());
 
     private final HashMap<Integer, Double> dyeHeights = new HashMap<>(){{
         put(0, 0.0);
@@ -45,7 +47,7 @@ public class DyeManager {
         final Location dyeLocation = cauldron.getLocation().clone().add(0, dyeHeights.get(waterLevel), 0);
         List<DyedCauldron> dyedCauldrons = new ArrayList<>(Objects.requireNonNull(chunk.getPersistentDataContainer().get(
                 dyeKey,
-                PersistentDataType.LIST.listTypeFrom(new DyedCauldronDataType()))));
+                PersistentDataType.LIST.listTypeFrom(DyedCauldronDataType.getInstance()))));
 
         System.out.println(dyedCauldrons);
 
@@ -73,7 +75,7 @@ public class DyeManager {
         dyedCauldrons.add(new DyedCauldron(cauldron.getLocation(), finalColor, dyePane.getUniqueId()));
         chunk.getPersistentDataContainer().set(
                 dyeKey,
-                PersistentDataType.LIST.listTypeFrom(new DyedCauldronDataType()),
+                PersistentDataType.LIST.listTypeFrom(DyedCauldronDataType.getInstance()),
                 dyedCauldrons);
     }
 
@@ -99,5 +101,13 @@ public class DyeManager {
         };
 
         return color.setAlpha(128);
+    }
+
+    public NamespacedKey getDyeKey() {
+        return dyeKey;
+    }
+
+    public ListPersistentDataType<String, DyedCauldron> getDataType() {
+        return dataType;
     }
 }

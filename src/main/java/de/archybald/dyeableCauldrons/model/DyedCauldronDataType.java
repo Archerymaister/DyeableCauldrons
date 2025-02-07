@@ -10,6 +10,15 @@ import org.jetbrains.annotations.NotNull;
 import java.util.UUID;
 
 public class DyedCauldronDataType implements PersistentDataType<String, DyedCauldron> {
+    private static DyedCauldronDataType instance;
+
+    public static DyedCauldronDataType getInstance() {
+        if(instance == null) {
+            instance = new DyedCauldronDataType();
+        }
+        return instance;
+    }
+
     /**
      * Returns the primitive data type of this tag.
      *

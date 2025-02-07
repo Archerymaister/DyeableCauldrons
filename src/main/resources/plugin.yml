@@ -3,3 +3,13 @@ author: Archybald
 version: '1.0-SNAPSHOT'
 main: de.archybald.dyeableCauldrons.DyeableCauldronsPlugin
 api-version: '1.21'
+
+commands:
+  dc:
+    description: Hauptbefehl für DyeableCauldrons
+    usage: /<command> <subcommand>
+    aliases: [ dyeablecauldrons ]
+    subcommands:
+      clearchunk:
+        description: Entfernt alle gefärbten Kessel im aktuellen Chunk
+        usage: /<command> clearchunk
