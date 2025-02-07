@@ -2,6 +2,7 @@ package de.archybald.dyeableCauldrons.managers;
 
 import de.archybald.dyeableCauldrons.model.DyedCauldron;
 import de.archybald.dyeableCauldrons.model.DyedCauldronDataType;
+import lombok.Getter;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Chunk;
 import org.bukkit.Color;
@@ -24,7 +25,9 @@ import java.util.Optional;
 
 public class DyeManager {
     private static DyeManager instance;
+    @Getter
     private final NamespacedKey dyeKey = new NamespacedKey("dyeable-cauldrons", "dyed-cauldron");
+    @Getter
     private final ListPersistentDataType<String, DyedCauldron> dataType = PersistentDataType.LIST.listTypeFrom(DyedCauldronDataType.getInstance());
 
     private final HashMap<Integer, Double> dyeHeights = new HashMap<>(){{
@@ -95,13 +98,5 @@ public class DyeManager {
         };
 
         return color.setAlpha(128);
-    }
-
-    public NamespacedKey getDyeKey() {
-        return dyeKey;
-    }
-
-    public ListPersistentDataType<String, DyedCauldron> getDataType() {
-        return dataType;
     }
 }
