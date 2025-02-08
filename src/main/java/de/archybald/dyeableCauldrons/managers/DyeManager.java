@@ -11,6 +11,7 @@ import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
 import org.bukkit.block.data.Levelled;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.TextDisplay;
 import org.bukkit.persistence.ListPersistentDataType;
 import org.bukkit.persistence.PersistentDataType;
@@ -20,7 +21,6 @@ import org.joml.Matrix4f;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 
 public class DyeManager {
@@ -30,11 +30,13 @@ public class DyeManager {
     @Getter
     private final ListPersistentDataType<String, DyedCauldron> dataType = PersistentDataType.LIST.listTypeFrom(DyedCauldronDataType.getInstance());
 
+    private final int dyeAlpha = 128;
+
     private final HashMap<Integer, Double> dyeHeights = new HashMap<>(){{
-        put(0, 0.0);
-        put(1, 0.375);
-        put(2, 0.625);
-        put(3, 0.875);
+        put(0, 0.251);
+        put(1, 0.5636);
+        put(2, 0.751);
+        put(3, 0.9385);
     }};
 
     public static DyeManager getInstance() {
@@ -47,7 +49,7 @@ public class DyeManager {
     public void dyeCauldron(final Block cauldron, Color color) {
         final int waterLevel = ((Levelled) cauldron.getBlockData()).getLevel();
         final Chunk chunk = cauldron.getChunk();
-        final Location dyeLocation = cauldron.getLocation().clone().add(0, dyeHeights.get(waterLevel), 0);
+        final Location dyeLocation = cauldron.getLocation().clone().add(0.5, dyeHeights.get(waterLevel), 1);
         List<DyedCauldron> dyedCauldrons = new ArrayList<>(Optional.ofNullable(chunk.getPersistentDataContainer().get(dyeKey, getDataType())).orElse(List.of()));
 
         if(dyedCauldrons.isEmpty()) {
@@ -57,15 +59,19 @@ public class DyeManager {
         final Optional<DyedCauldron> existingCauldron = dyedCauldrons.stream().filter(dc -> dc.location().equals(cauldron.getLocation())).findFirst();
 
         if(existingCauldron.isPresent()) {
+            final Entity entity = dyeLocation.getWorld().getEntity(existingCauldron.get().uuid());
+            if(entity != null) {
+                entity.remove();
+            }
+
             dyedCauldrons.remove(existingCauldron.get());
-            Objects.requireNonNull(dyeLocation.getWorld().getEntity(existingCauldron.get().uuid())).remove();
-            color = color.mixColors(existingCauldron.get().color()).setAlpha(128);
+            color = color.mixColors(existingCauldron.get().color()).setAlpha(dyeAlpha);
         }
 
         final Color finalColor = color;
         final TextDisplay dyePane = cauldron.getWorld().spawn(dyeLocation, TextDisplay.class, textDisplay -> {
-            textDisplay.text(Component.text("A"));
-            textDisplay.setTransformationMatrix(new Matrix4f().scale(4f));
+            textDisplay.text(Component.text("  "));
+            textDisplay.setTransformationMatrix(new Matrix4f().rotateX((float) (Math.PI * -0.5f)).scale(4f));
             textDisplay.setBackgroundColor(finalColor);
         });
 
@@ -97,6 +103,6 @@ public class DyeManager {
             default -> Color.fromARGB(128, 0, 0, 0);
         };
 
-        return color.setAlpha(128);
+        return color.setAlpha(dyeAlpha);
     }
 }
