@@ -9,5 +9,4 @@ public record DyedCauldron(
         Location location,
         Color color,
         UUID uuid
-) {
-}
+) {}

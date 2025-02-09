@@ -49,39 +49,157 @@ public class DyeManager {
     public void dyeCauldron(final Block cauldron, Color color) {
         final int waterLevel = ((Levelled) cauldron.getBlockData()).getLevel();
         final Chunk chunk = cauldron.getChunk();
-        final Location dyeLocation = cauldron.getLocation().clone().add(0.5, dyeHeights.get(waterLevel), 1);
-        List<DyedCauldron> dyedCauldrons = new ArrayList<>(Optional.ofNullable(chunk.getPersistentDataContainer().get(dyeKey, getDataType())).orElse(List.of()));
+        final Location dyeLocation = getDyeLocation(cauldron);
+        List<DyedCauldron> dyedCauldrons = getDyedCauldronsFromChunk(cauldron.getChunk());
 
-        if(dyedCauldrons.isEmpty()) {
-            dyedCauldrons = new ArrayList<>(List.of());
-        }
+        final Optional<DyedCauldron> existingCauldron = getDyedCauldron(cauldron);
 
-        final Optional<DyedCauldron> existingCauldron = dyedCauldrons.stream().filter(dc -> dc.location().equals(cauldron.getLocation())).findFirst();
+        TextDisplay dyePane = null;
 
         if(existingCauldron.isPresent()) {
-            final Entity entity = dyeLocation.getWorld().getEntity(existingCauldron.get().uuid());
-            if(entity != null) {
-                entity.remove();
-            }
-
-            dyedCauldrons.remove(existingCauldron.get());
+            dyePane = (TextDisplay) dyeLocation.getWorld().getEntity(existingCauldron.get().uuid());
             color = color.mixColors(existingCauldron.get().color()).setAlpha(dyeAlpha);
         }
 
-        final Color finalColor = color;
-        final TextDisplay dyePane = cauldron.getWorld().spawn(dyeLocation, TextDisplay.class, textDisplay -> {
-            textDisplay.text(Component.text("  "));
-            textDisplay.setTransformationMatrix(new Matrix4f().rotateX((float) (Math.PI * -0.5f)).scale(4f));
-            textDisplay.setBackgroundColor(finalColor);
-        });
+        if(dyePane == null) {
+            dyePane = cauldron.getWorld().spawn(dyeLocation, TextDisplay.class, textDisplay -> {
+                textDisplay.text(Component.text("  "));
+                textDisplay.setTransformationMatrix(new Matrix4f().rotateX((float) (Math.PI * -0.5f)).scale(4f));
+            });
+        }
 
-        dyedCauldrons.add(new DyedCauldron(cauldron.getLocation(), finalColor, dyePane.getUniqueId()));
-        chunk.getPersistentDataContainer().set(
+        dyePane.setBackgroundColor(color);
+        storeDyedCauldron(new DyedCauldron(cauldron.getLocation(), color, dyePane.getUniqueId()), cauldron);
+    }
+
+    /**
+     * Get the dyed cauldrons from the given chunk.
+     *
+     * @param chunk The chunk to get the dyed cauldrons from
+     * @return List of dyed cauldrons
+     */
+    public List<DyedCauldron> getDyedCauldronsFromChunk(final Chunk chunk) {
+        List<DyedCauldron> dyedCauldrons = Optional.ofNullable(chunk.getPersistentDataContainer().get(dyeKey, getDataType())).orElse(List.of());
+        return new ArrayList<>(dyedCauldrons);
+    }
+
+    /**
+     * Get the dyed cauldron for the given block.
+     *
+     * @param block The block to get the dyed cauldron for
+     * @return Optional of the dyed cauldron
+     */
+    public Optional<DyedCauldron> getDyedCauldron(final Block block){
+        final List<DyedCauldron> dyedCauldrons = getDyedCauldronsFromChunk(block.getChunk());
+        return dyedCauldrons.stream().filter(dc -> dc.location().equals(block.getLocation())).findFirst();
+    }
+
+    /**
+     * Store or update the dyed cauldron in the chunk.
+     *
+     * @param cauldron The dyed cauldron to store
+     * @param block The block to store the dyed cauldron for
+     */
+    public void storeDyedCauldron(final DyedCauldron cauldron, final Block block) {
+        final List<DyedCauldron> dyedCauldrons = getDyedCauldronsFromChunk(block.getChunk());
+
+        final Optional<DyedCauldron> existingCauldron = dyedCauldrons.stream().filter(dc -> dc.location().equals(block.getLocation())).findFirst();
+
+        if(existingCauldron.isPresent()) {
+            System.out.println("Storing existing cauldron");
+            dyedCauldrons.remove(existingCauldron.get());
+        } else {
+            System.out.println("Storing new cauldron");
+        }
+
+        dyedCauldrons.add(new DyedCauldron(block.getLocation(), cauldron.color(), cauldron.uuid()));
+        block.getChunk().getPersistentDataContainer().set(
                 dyeKey,
                 PersistentDataType.LIST.listTypeFrom(DyedCauldronDataType.getInstance()),
                 dyedCauldrons);
     }
 
+    /**
+     * Get the location of the dye pane for the given block and water level.
+     *
+     * @param block The block to get the dye pane location for
+     * @param waterLevel The water level of the cauldron
+     * @return The location of the dye pane
+     */
+    public Location getDyeLocation(final Block block, final int waterLevel) {
+        return block.getLocation().clone().add(0.5, dyeHeights.get(waterLevel), 1);
+    }
+
+    /**
+     * Get the location of the dye pane for the given block. Block must be a water cauldron. Uses the current water level.
+     *
+     * @param block The block to get the dye pane location for
+     * @return The location of the dye pane
+     */
+    public Location getDyeLocation(final Block block) {
+        final int waterLevel = ((Levelled) block.getBlockData()).getLevel();
+        return getDyeLocation(block, waterLevel);
+    }
+
+    /**
+     * Move the dye pane to the given location.
+     *
+     * @param dyePane The dye pane to move
+     * @param location The location to move the dye pane to
+     */
+    public void moveDyePaneToLocation(final TextDisplay dyePane, final Location location) {
+        dyePane.teleport(location);
+    }
+
+    /**
+     * Get the dye pane TextDisplay entity for the given block.
+     *
+     * @param block The block to get the dye pane for
+     * @return Optional of the dye pane
+     */
+    public Optional<TextDisplay> getDyePane(final Block block) {
+        final Optional<DyedCauldron> dyedCauldron = getDyedCauldron(block);
+
+        if(dyedCauldron.isEmpty()) {
+            return Optional.empty();
+        }
+
+        final TextDisplay dyePane = (TextDisplay) block.getWorld().getEntity(dyedCauldron.get().uuid());
+
+        return Optional.ofNullable(dyePane);
+    }
+
+    public void removeDyedCauldron(@NotNull Block block) {
+        final Optional<DyedCauldron> cauldron = getDyedCauldron(block);
+
+        if(cauldron.isEmpty()) {
+            return;
+        }
+
+        final Entity entity = block.getWorld().getEntity(cauldron.get().uuid());
+
+        if(entity != null) {
+            entity.remove();
+        }
+
+        final List<DyedCauldron> dyedCauldrons = new ArrayList<>(Optional.ofNullable(block.getChunk().getPersistentDataContainer().get(dyeKey, getDataType())).orElse(List.of()));
+
+        dyedCauldrons.remove(cauldron.get());
+
+        block.getChunk().getPersistentDataContainer().set(
+                dyeKey,
+                PersistentDataType.LIST.listTypeFrom(DyedCauldronDataType.getInstance()),
+                dyedCauldrons);
+
+        System.out.println("Removed dyed cauldron");
+    }
+
+    /**
+     * Get the color from the given dye material.
+     *
+     * @param type The dye material to get the color from
+     * @return The color of the dye
+     */
     public Color getColorFromDye(@NotNull Material type) {
         final Color color = switch (type) {
             case BLACK_DYE -> Color.BLACK;
