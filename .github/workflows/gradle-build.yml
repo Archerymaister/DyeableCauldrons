@@ -11,7 +11,15 @@ on:
 env:
   shardNexusUser: ${{ secrets.SHARD_NEXUS_USER }}
   shardNexusPassword: ${{ secrets.SHARD_NEXUS_PASSWORD }}
+  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   javaDocBaseDir: "/data/javadocs/"
+
+permissions:
+  contents: write
+  packages: write
+  issues: write
+  pull-requests: write
+  deployments: write
 
 jobs:
   build:
