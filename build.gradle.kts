@@ -1,9 +1,11 @@
 plugins {
     java
+    id("dev.projectshard.build.java-conventions") version "0.1.9"
+    id("dev.projectshard.build.distribution") version "0.1.9"
     id("dev.projectshard.build.ci-cd") version "0.1.9"
 }
 
-group = "de.archybald"
+group = "de.cubenation"
 version = "1.0.0"
 
 repositories {
