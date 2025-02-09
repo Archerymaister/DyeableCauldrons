@@ -47,13 +47,8 @@ public class DyeManager {
     }
 
     public void dyeCauldron(final Block cauldron, Color color) {
-        final int waterLevel = ((Levelled) cauldron.getBlockData()).getLevel();
-        final Chunk chunk = cauldron.getChunk();
         final Location dyeLocation = getDyeLocation(cauldron);
-        List<DyedCauldron> dyedCauldrons = getDyedCauldronsFromChunk(cauldron.getChunk());
-
         final Optional<DyedCauldron> existingCauldron = getDyedCauldron(cauldron);
-
         TextDisplay dyePane = null;
 
         if(existingCauldron.isPresent()) {
