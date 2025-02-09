@@ -1,5 +1,6 @@
 plugins {
     java
+    id("dev.projectshard.build.ci-cd") version "0.1.9"
 }
 
 group = "de.archybald"
