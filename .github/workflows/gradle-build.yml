@@ -1,0 +1,127 @@
+name: Build gradle package
+
+on:
+  push:
+    branches:
+      - main
+  create:
+    tags:
+      - 'v*' # Enforce semantic versioning
+
+env:
+  shardNexusUser: ${{ secrets.SHARD_NEXUS_USER }}
+  shardNexusPassword: ${{ secrets.SHARD_NEXUS_PASSWORD }}
+  javaDocBaseDir: "/data/javadocs/"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions: write-all
+
+    steps:
+      - name: ⚙ Checkout project
+        uses: actions/checkout@v4
+
+      - name: ❌ Fail if release does not start with a 'v'
+        if: startsWith(github.ref, 'refs/tags/') && !startsWith(github.ref, 'refs/tags/v')
+        run: exit 1
+
+      - name: ⚙ Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
+          settings-path: ${{ github.workspace }} # location for the settings.xml file
+
+      - name: ⚙ Setup Gradle
+        uses: gradle/actions/setup-gradle@v4.2.2
+
+      - name: 🛠 Build with Gradle
+        run: ./gradlew build
+
+      - name: ☁ Upload artifact
+        uses: actions/upload-artifact@v4
+        if: startsWith(github.ref, 'refs/tags/v')
+        with:
+          name: jar-files
+          path: ./build/libs/*.jar
+
+  publish:
+    runs-on: ubuntu-latest
+    needs:
+      - build
+    if: startsWith(github.ref, 'refs/tags/v')
+
+    steps:
+      - name: ⚙ Checkout project
+        uses: actions/checkout@v4
+
+      - name: ⚙ Setup Gradle
+        uses: gradle/actions/setup-gradle@v4.2.2
+
+      - name: ⚙ Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          server-id: github
+          settings-path: ${{ github.workspace }}
+
+      - name: ⬇ Download artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: jar-files
+          path: ./build/libs/
+
+      - name: 📣 Publish to GitHub Release
+        uses: softprops/action-gh-release@v2.1.0
+        with:
+          files: ./build/libs/*.jar
+
+      - name: 📣 Publish to nexus
+        run: ./gradlew publishToShardNexus
+
+  javadoc:
+    runs-on: ubuntu-latest
+    needs:
+      - build
+    if: startsWith(github.ref, 'refs/tags/v')
+
+    steps:
+      - name: ⚙ Checkout project
+        uses: actions/checkout@v4
+
+      - name: ⚙ Setup Gradle
+        uses: gradle/actions/setup-gradle@v4.2.2
+
+      - name: ⚙ Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          server-id: github
+          settings-path: ${{ github.workspace }}
+
+      - name: ⚙ Set project name variable
+        run: echo "GRADLE_PROJECT_NAME=$(./gradlew getProjectName --quiet --console=plain)" >> $GITHUB_ENV
+
+      - name: ⚙ Set project version variable
+        run: echo "GRADLE_PROJECT_VERSION=$(./gradlew getProjectVersion --quiet --console=plain)" >> $GITHUB_ENV
+
+      - name: 📃 Generate JavaDoc
+        run: ./gradlew javadoc
+
+      - name: 📁 Zip JavaDoc files
+        run: cd ./build/docs/ && zip -r ../../JavaDoc-$GRADLE_PROJECT_NAME-$GRADLE_PROJECT_VERSION.zip javadoc/ && cd -
+
+      - name: 📣 Publish to GitHub Release
+        uses: softprops/action-gh-release@v2.1.0
+        with:
+          files: "JavaDoc*.zip"
+
+      - name: ☁ Upload javadoc
+        uses: actions/upload-artifact@v4
+        with:
+          name: javadoc
+          path: ./build/docs/*
