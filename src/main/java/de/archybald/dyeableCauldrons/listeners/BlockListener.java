@@ -11,6 +11,7 @@ import org.bukkit.entity.TextDisplay;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.CauldronLevelChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
@@ -61,6 +62,16 @@ public class BlockListener implements Listener {
         final Color color = DyeManager.getInstance().getColorFromDye(item.getType());
 
         DyeManager.getInstance().dyeCauldron(block, color);
+    }
+
+    @EventHandler
+    public void onBlockBreakEvent(final BlockBreakEvent event) {
+        final Block block = event.getBlock();
+        if(block.getType() != Material.WATER_CAULDRON) {
+            return;
+        }
+
+        DyeManager.getInstance().removeDyedCauldron(block);
     }
 
     @EventHandler
