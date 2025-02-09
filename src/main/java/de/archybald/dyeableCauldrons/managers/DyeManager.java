@@ -102,15 +102,9 @@ public class DyeManager {
      */
     public void storeDyedCauldron(final DyedCauldron cauldron, final Block block) {
         final List<DyedCauldron> dyedCauldrons = getDyedCauldronsFromChunk(block.getChunk());
-
         final Optional<DyedCauldron> existingCauldron = dyedCauldrons.stream().filter(dc -> dc.location().equals(block.getLocation())).findFirst();
 
-        if(existingCauldron.isPresent()) {
-            System.out.println("Storing existing cauldron");
-            dyedCauldrons.remove(existingCauldron.get());
-        } else {
-            System.out.println("Storing new cauldron");
-        }
+        existingCauldron.ifPresent(dyedCauldrons::remove);
 
         dyedCauldrons.add(new DyedCauldron(block.getLocation(), cauldron.color(), cauldron.uuid()));
         block.getChunk().getPersistentDataContainer().set(
@@ -190,8 +184,6 @@ public class DyeManager {
                 dyeKey,
                 PersistentDataType.LIST.listTypeFrom(DyedCauldronDataType.getInstance()),
                 dyedCauldrons);
-
-        System.out.println("Removed dyed cauldron");
     }
 
     /**

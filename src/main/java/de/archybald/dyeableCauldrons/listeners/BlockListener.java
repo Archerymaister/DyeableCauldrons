@@ -22,6 +22,8 @@ public class BlockListener implements Listener {
 
     @EventHandler
     public void onPlayerInteractEvent(final PlayerInteractEvent event) {
+        // Limit the event to right-clicking with the main hand.
+        // This is to prevent the event from firing twice, once for each hand.
         if(event.getAction() != Action.RIGHT_CLICK_BLOCK) {
             return;
         }
@@ -63,42 +65,29 @@ public class BlockListener implements Listener {
 
     @EventHandler
     public void onCauldronLevelChangeEvent(final CauldronLevelChangeEvent event){
-        final Block newBlock = event.getNewState().getBlock();
-
-        System.out.println("Old block: " + event.getBlock().getType());
-        System.out.println("New block: " + event.getNewState().getType());
-
-        if(event.getBlock().getType() == Material.WATER_CAULDRON)
-            System.out.println("Old waterlevel: " + ((Levelled) event.getBlock().getBlockData()).getLevel());
-
-        if(event.getNewState().getType() == Material.WATER_CAULDRON)
-            System.out.println("new waterlevel: " + ((Levelled) event.getNewState().getBlockData()).getLevel());
 
         // If the block was not a water cauldron, we don't need to do anything
         if(event.getBlock().getType() != Material.WATER_CAULDRON){
-            System.out.println("Not a water cauldron");
             return;
         }
 
         // Delete the dyed cauldron if the new block is not a cauldron
         if(event.getNewState().getType() == Material.CAULDRON) {
-            DyeManager.getInstance().removeDyedCauldron(newBlock);
+            DyeManager.getInstance().removeDyedCauldron(event.getBlock());
             return;
         }
 
-        Optional<DyedCauldron> dyedCauldron = DyeManager.getInstance().getDyedCauldron(newBlock);
+        Optional<DyedCauldron> dyedCauldron = DyeManager.getInstance().getDyedCauldron(event.getBlock());
         if(dyedCauldron.isEmpty()){
-            System.out.println("Not a dyed cauldron");
             return;
         }
 
-        final Optional<TextDisplay> dyePane = DyeManager.getInstance().getDyePane(newBlock);
+        final Optional<TextDisplay> dyePane = DyeManager.getInstance().getDyePane(event.getBlock());
         if(dyePane.isEmpty()){
-            System.out.println("No dye pane found");
             return;
         }
 
         final int waterLevel = ((Levelled) event.getNewState().getBlockData()).getLevel();
-        DyeManager.getInstance().moveDyePaneToLocation(dyePane.get(), DyeManager.getInstance().getDyeLocation(newBlock, waterLevel));
+        DyeManager.getInstance().moveDyePaneToLocation(dyePane.get(), DyeManager.getInstance().getDyeLocation(event.getBlock(), waterLevel));
     }
 }
