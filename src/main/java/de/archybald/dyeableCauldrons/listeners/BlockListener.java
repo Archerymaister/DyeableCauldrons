@@ -12,6 +12,8 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockPistonExtendEvent;
+import org.bukkit.event.block.BlockPistonRetractEvent;
 import org.bukkit.event.block.CauldronLevelChangeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
@@ -72,6 +74,20 @@ public class BlockListener implements Listener {
         }
 
         DyeManager.getInstance().removeDyedCauldron(block);
+    }
+
+    @EventHandler
+    public void onBlockPistonExtendEvent(final BlockPistonExtendEvent event) {
+        if(event.getBlocks().stream().anyMatch(block -> DyeManager.getInstance().getDyedCauldron(block).isPresent())) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    public void onBlockPistonRetractEvent(final BlockPistonRetractEvent event) {
+        if(event.getBlocks().stream().anyMatch(block -> DyeManager.getInstance().getDyedCauldron(block).isPresent())) {
+            event.setCancelled(true);
+        }
     }
 
     @EventHandler
