@@ -85,6 +85,10 @@ public class DyeManager {
      * @return Optional of the dyed cauldron
      */
     public Optional<DyedCauldron> getDyedCauldron(final Block block){
+        if(block.getType() != Material.WATER_CAULDRON) {
+            return Optional.empty();
+        }
+
         final List<DyedCauldron> dyedCauldrons = getDyedCauldronsFromChunk(block.getChunk());
         return dyedCauldrons.stream().filter(dc -> dc.location().equals(block.getLocation())).findFirst();
     }
