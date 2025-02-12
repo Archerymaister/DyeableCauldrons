@@ -78,14 +78,20 @@ public class BlockListener implements Listener {
 
     @EventHandler
     public void onBlockPistonExtendEvent(final BlockPistonExtendEvent event) {
-        if(event.getBlocks().stream().anyMatch(block -> DyeManager.getInstance().getDyedCauldron(block).isPresent())) {
+        final boolean dyedCauldronAffected = event.getBlocks().stream()
+                .filter(block -> block.getType() == Material.WATER_CAULDRON)
+                .anyMatch(block -> DyeManager.getInstance().getDyedCauldron(block).isPresent());
+        if(dyedCauldronAffected) {
             event.setCancelled(true);
         }
     }
 
     @EventHandler
     public void onBlockPistonRetractEvent(final BlockPistonRetractEvent event) {
-        if(event.getBlocks().stream().anyMatch(block -> DyeManager.getInstance().getDyedCauldron(block).isPresent())) {
+        final boolean dyedCauldronAffected = event.getBlocks().stream()
+                .filter(block -> block.getType() == Material.WATER_CAULDRON)
+                .anyMatch(block -> DyeManager.getInstance().getDyedCauldron(block).isPresent());
+        if(dyedCauldronAffected) {
             event.setCancelled(true);
         }
     }
