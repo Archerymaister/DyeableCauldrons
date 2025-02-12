@@ -59,7 +59,7 @@ public class DyeManager {
         if(dyePane == null) {
             dyePane = cauldron.getWorld().spawn(dyeLocation, TextDisplay.class, textDisplay -> {
                 textDisplay.text(Component.text("  "));
-                textDisplay.setTransformationMatrix(new Matrix4f().rotateX((float) (Math.PI * -0.5f)).scale(4f));
+                textDisplay.setTransformationMatrix(new Matrix4f().rotateX((float) (Math.PI * -0.5f)).scale(3.8f, 4f, 4f));
             });
         }
 
