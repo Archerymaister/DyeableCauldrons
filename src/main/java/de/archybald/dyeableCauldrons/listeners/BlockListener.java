@@ -1,5 +1,6 @@
 package de.archybald.dyeableCauldrons.listeners;
 
+import com.destroystokyo.paper.MaterialTags;
 import de.archybald.dyeableCauldrons.managers.DyeManager;
 import de.archybald.dyeableCauldrons.model.DyedCauldron;
 import net.kyori.adventure.text.Component;
@@ -46,7 +47,7 @@ public class BlockListener implements Listener {
             return;
         }
 
-        if(!item.getType().name().endsWith("_DYE")){
+        if(!MaterialTags.DYES.isTagged(item)){
             return;
         }
 
