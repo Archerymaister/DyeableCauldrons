@@ -10,6 +10,7 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.Levelled;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.TextDisplay;
@@ -49,6 +50,7 @@ public class CauldronManager {
     public void dyeCauldron(final Block cauldron, Color color) {
         final Location dyeLocation = getDyeLocation(cauldron);
         final Optional<DyedCauldron> existingCauldron = getDyedCauldron(cauldron);
+
         TextDisplay dyePane = null;
 
         if(existingCauldron.isPresent()) {
@@ -65,6 +67,21 @@ public class CauldronManager {
 
         dyePane.setBackgroundColor(color);
         storeDyedCauldron(new DyedCauldron(cauldron.getLocation(), color, dyePane.getUniqueId()), cauldron);
+    }
+
+    public void createDyedCauldron(final Block block, final Color color, final int waterLevel) {
+        if(getDyedCauldron(block).isPresent()) {
+            return;
+        }
+
+        final Location dyeLocation = getDyeLocation(block, waterLevel);
+        final TextDisplay dyePane = block.getWorld().spawn(dyeLocation, TextDisplay.class, textDisplay -> {
+            textDisplay.text(Component.text("  "));
+            textDisplay.setTransformationMatrix(new Matrix4f().rotateX((float) (Math.PI * -0.5f)).scale(3.8f, 4f, 4f));
+            textDisplay.setBackgroundColor(color);
+        });
+
+        storeDyedCauldron(new DyedCauldron(block.getLocation(), color, dyePane.getUniqueId()), block);
     }
 
     /**
@@ -183,6 +200,19 @@ public class CauldronManager {
                 dyeKey,
                 PersistentDataType.LIST.listTypeFrom(DyedCauldronDataType.getInstance()),
                 dyedCauldrons);
+    }
+
+    public void moveDyedCauldrons(@NotNull final List<Block> cauldrons, @NotNull final BlockFace direction) {
+        cauldrons.forEach(cauldronBlock -> {
+            final Optional<DyedCauldron> dyedCauldron = getDyedCauldron(cauldronBlock);
+
+            if(dyedCauldron.isEmpty()) {
+                return;
+            }
+
+            removeDyedCauldron(cauldronBlock);
+            createDyedCauldron(cauldronBlock.getRelative(direction), dyedCauldron.get().color().setAlpha(128), ((Levelled) cauldronBlock.getBlockData()).getLevel());
+        });
     }
 
     /**

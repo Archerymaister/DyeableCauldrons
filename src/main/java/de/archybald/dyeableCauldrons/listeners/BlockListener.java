@@ -20,6 +20,7 @@ import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
 
+import java.util.List;
 import java.util.Optional;
 
 public class BlockListener implements Listener {
@@ -79,22 +80,18 @@ public class BlockListener implements Listener {
 
     @EventHandler
     public void onBlockPistonExtendEvent(final BlockPistonExtendEvent event) {
-        final boolean dyedCauldronAffected = event.getBlocks().stream()
+        final List<Block> cauldrons = event.getBlocks().stream()
                 .filter(block -> block.getType() == Material.WATER_CAULDRON)
-                .anyMatch(block -> CauldronManager.getInstance().getDyedCauldron(block).isPresent());
-        if(dyedCauldronAffected) {
-            event.setCancelled(true);
-        }
+                .toList();
+        CauldronManager.getInstance().moveDyedCauldrons(cauldrons, event.getDirection());
     }
 
     @EventHandler
     public void onBlockPistonRetractEvent(final BlockPistonRetractEvent event) {
-        final boolean dyedCauldronAffected = event.getBlocks().stream()
+        final List<Block> cauldrons = event.getBlocks().stream()
                 .filter(block -> block.getType() == Material.WATER_CAULDRON)
-                .anyMatch(block -> CauldronManager.getInstance().getDyedCauldron(block).isPresent());
-        if(dyedCauldronAffected) {
-            event.setCancelled(true);
-        }
+                .toList();
+        CauldronManager.getInstance().moveDyedCauldrons(cauldrons, event.getDirection());
     }
 
     @EventHandler
