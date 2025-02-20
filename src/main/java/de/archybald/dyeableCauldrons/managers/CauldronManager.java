@@ -40,6 +40,11 @@ public class CauldronManager {
         put(3, 0.9385);
     }};
 
+    /**
+     * Get the instance of the CauldronManager.
+     *
+     * @return The instance of the CauldronManager
+     */
     public static CauldronManager getInstance() {
         if(instance == null) {
             instance = new CauldronManager();
@@ -47,41 +52,62 @@ public class CauldronManager {
         return instance;
     }
 
+    /**
+     * Dye the given cauldron with the given color.
+     *
+     * @param cauldron The cauldron to dye
+     * @param color The color to dye the cauldron with
+     */
     public void dyeCauldron(final Block cauldron, Color color) {
         final Location dyeLocation = getDyeLocation(cauldron);
         final Optional<DyedCauldron> existingCauldron = getDyedCauldron(cauldron);
 
-        TextDisplay dyePane = null;
-
-        if(existingCauldron.isPresent()) {
-            dyePane = (TextDisplay) dyeLocation.getWorld().getEntity(existingCauldron.get().uuid());
-            color = color.mixColors(existingCauldron.get().color()).setAlpha(dyeAlpha);
+        if(existingCauldron.isEmpty()) {
+            createDyedCauldron(cauldron, color, ((Levelled) cauldron.getBlockData()).getLevel());
+            return;
         }
+
+        TextDisplay dyePane = (TextDisplay) dyeLocation.getWorld().getEntity(existingCauldron.get().uuid());
 
         if(dyePane == null) {
-            dyePane = cauldron.getWorld().spawn(dyeLocation, TextDisplay.class, textDisplay -> {
-                textDisplay.text(Component.text("  "));
-                textDisplay.setTransformationMatrix(new Matrix4f().rotateX((float) (Math.PI * -0.5f)).scale(3.8f, 4f, 4f));
-            });
+            dyePane = spawnDyePane(dyeLocation, color);
         }
 
+        color = color.mixColors(existingCauldron.get().color()).setAlpha(dyeAlpha);
         dyePane.setBackgroundColor(color);
         storeDyedCauldron(new DyedCauldron(cauldron.getLocation(), color, dyePane.getUniqueId()), cauldron);
     }
 
+    /**
+     * Create a dyed cauldron for the given block with the given color and water level.
+     *
+     * @param block The block to create the dyed cauldron for
+     * @param color The color of the dyed cauldron
+     * @param waterLevel The water level of the cauldron
+     */
     public void createDyedCauldron(final Block block, final Color color, final int waterLevel) {
         if(getDyedCauldron(block).isPresent()) {
             return;
         }
 
         final Location dyeLocation = getDyeLocation(block, waterLevel);
-        final TextDisplay dyePane = block.getWorld().spawn(dyeLocation, TextDisplay.class, textDisplay -> {
+        final TextDisplay dyePane = spawnDyePane(dyeLocation, color);
+
+        storeDyedCauldron(new DyedCauldron(block.getLocation(), color, dyePane.getUniqueId()), block);
+    }
+
+    /**
+     * Create a dyed cauldron for the given block with the given color.
+     *
+     * @param location The location to create the dyed cauldron for
+     * @param color The color of the dyed cauldron
+     */
+    private TextDisplay spawnDyePane(final Location location, final Color color) {
+        return location.getWorld().spawn(location, TextDisplay.class, textDisplay -> {
             textDisplay.text(Component.text("  "));
             textDisplay.setTransformationMatrix(new Matrix4f().rotateX((float) (Math.PI * -0.5f)).scale(3.8f, 4f, 4f));
             textDisplay.setBackgroundColor(color);
         });
-
-        storeDyedCauldron(new DyedCauldron(block.getLocation(), color, dyePane.getUniqueId()), block);
     }
 
     /**
@@ -179,6 +205,11 @@ public class CauldronManager {
         return Optional.ofNullable(dyePane);
     }
 
+    /**
+     * Remove the dyed cauldron for the given block.
+     *
+     * @param block The block to remove the dyed cauldron for
+     */
     public void removeDyedCauldron(@NotNull Block block) {
         final Optional<DyedCauldron> cauldron = getDyedCauldron(block);
 
@@ -202,6 +233,12 @@ public class CauldronManager {
                 dyedCauldrons);
     }
 
+    /**
+     * Move the dyed cauldrons in the given list in the given direction.
+     *
+     * @param cauldrons The list of cauldrons to move
+     * @param direction The direction to move the cauldrons in
+     */
     public void moveDyedCauldrons(@NotNull final List<Block> cauldrons, @NotNull final BlockFace direction) {
         cauldrons.forEach(cauldronBlock -> {
             final Optional<DyedCauldron> dyedCauldron = getDyedCauldron(cauldronBlock);
