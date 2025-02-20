@@ -1,6 +1,6 @@
 package de.archybald.dyeableCauldrons.commands;
 
-import de.archybald.dyeableCauldrons.managers.DyeManager;
+import de.archybald.dyeableCauldrons.managers.CauldronManager;
 import de.archybald.dyeableCauldrons.model.DyedCauldron;
 import net.kyori.adventure.text.Component;
 import org.bukkit.NamespacedKey;
@@ -16,8 +16,8 @@ public class Commands {
     public static void removePersistentDataInChunk(
             final Player player
     ) {
-        final NamespacedKey key = DyeManager.getInstance().getDyeKey();
-        final ListPersistentDataType<String, DyedCauldron> dataType = DyeManager.getInstance().getDataType();
+        final NamespacedKey key = CauldronManager.getInstance().getDyeKey();
+        final ListPersistentDataType<String, DyedCauldron> dataType = CauldronManager.getInstance().getDataType();
         final PersistentDataContainer container = player.getChunk().getPersistentDataContainer();
         final List<DyedCauldron> list = container.get(key, dataType);
 
@@ -32,7 +32,7 @@ public class Commands {
                 .filter(Objects::nonNull)
                 .forEach(Entity::remove);
 
-        container.remove(DyeManager.getInstance().getDyeKey());
+        container.remove(CauldronManager.getInstance().getDyeKey());
         player.sendMessage(Component.text("Removed " + count + " dyed cauldrons in this chunk"));
     }
 }
