@@ -23,8 +23,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
-public class DyeManager {
-    private static DyeManager instance;
+public class CauldronManager {
+    private static CauldronManager instance;
     @Getter
     private final NamespacedKey dyeKey = new NamespacedKey("dyeable-cauldrons", "dyed-cauldron");
     @Getter
@@ -39,9 +39,9 @@ public class DyeManager {
         put(3, 0.9385);
     }};
 
-    public static DyeManager getInstance() {
+    public static CauldronManager getInstance() {
         if(instance == null) {
-            instance = new DyeManager();
+            instance = new CauldronManager();
         }
         return instance;
     }

@@ -1,7 +1,7 @@
 package de.archybald.dyeableCauldrons.listeners;
 
 import com.destroystokyo.paper.MaterialTags;
-import de.archybald.dyeableCauldrons.managers.DyeManager;
+import de.archybald.dyeableCauldrons.managers.CauldronManager;
 import de.archybald.dyeableCauldrons.model.DyedCauldron;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Color;
@@ -62,9 +62,9 @@ public class BlockListener implements Listener {
             return;
         }
 
-        final Color color = DyeManager.getInstance().getColorFromDye(item.getType());
+        final Color color = CauldronManager.getInstance().getColorFromDye(item.getType());
 
-        DyeManager.getInstance().dyeCauldron(block, color);
+        CauldronManager.getInstance().dyeCauldron(block, color);
     }
 
     @EventHandler
@@ -74,14 +74,14 @@ public class BlockListener implements Listener {
             return;
         }
 
-        DyeManager.getInstance().removeDyedCauldron(block);
+        CauldronManager.getInstance().removeDyedCauldron(block);
     }
 
     @EventHandler
     public void onBlockPistonExtendEvent(final BlockPistonExtendEvent event) {
         final boolean dyedCauldronAffected = event.getBlocks().stream()
                 .filter(block -> block.getType() == Material.WATER_CAULDRON)
-                .anyMatch(block -> DyeManager.getInstance().getDyedCauldron(block).isPresent());
+                .anyMatch(block -> CauldronManager.getInstance().getDyedCauldron(block).isPresent());
         if(dyedCauldronAffected) {
             event.setCancelled(true);
         }
@@ -91,7 +91,7 @@ public class BlockListener implements Listener {
     public void onBlockPistonRetractEvent(final BlockPistonRetractEvent event) {
         final boolean dyedCauldronAffected = event.getBlocks().stream()
                 .filter(block -> block.getType() == Material.WATER_CAULDRON)
-                .anyMatch(block -> DyeManager.getInstance().getDyedCauldron(block).isPresent());
+                .anyMatch(block -> CauldronManager.getInstance().getDyedCauldron(block).isPresent());
         if(dyedCauldronAffected) {
             event.setCancelled(true);
         }
@@ -107,21 +107,21 @@ public class BlockListener implements Listener {
 
         // Delete the dyed cauldron if the new block is not a cauldron
         if(event.getNewState().getType() == Material.CAULDRON) {
-            DyeManager.getInstance().removeDyedCauldron(event.getBlock());
+            CauldronManager.getInstance().removeDyedCauldron(event.getBlock());
             return;
         }
 
-        Optional<DyedCauldron> dyedCauldron = DyeManager.getInstance().getDyedCauldron(event.getBlock());
+        Optional<DyedCauldron> dyedCauldron = CauldronManager.getInstance().getDyedCauldron(event.getBlock());
         if(dyedCauldron.isEmpty()){
             return;
         }
 
-        final Optional<TextDisplay> dyePane = DyeManager.getInstance().getDyePane(event.getBlock());
+        final Optional<TextDisplay> dyePane = CauldronManager.getInstance().getDyePane(event.getBlock());
         if(dyePane.isEmpty()){
             return;
         }
 
         final int waterLevel = ((Levelled) event.getNewState().getBlockData()).getLevel();
-        DyeManager.getInstance().moveDyePaneToLocation(dyePane.get(), DyeManager.getInstance().getDyeLocation(event.getBlock(), waterLevel));
+        CauldronManager.getInstance().moveDyePaneToLocation(dyePane.get(), CauldronManager.getInstance().getDyeLocation(event.getBlock(), waterLevel));
     }
 }
