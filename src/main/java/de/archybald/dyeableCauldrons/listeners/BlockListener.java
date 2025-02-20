@@ -16,6 +16,7 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPistonExtendEvent;
 import org.bukkit.event.block.BlockPistonRetractEvent;
 import org.bukkit.event.block.CauldronLevelChangeEvent;
+import org.bukkit.event.entity.EntityChangeBlockEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
@@ -24,6 +25,15 @@ import java.util.List;
 import java.util.Optional;
 
 public class BlockListener implements Listener {
+
+    @EventHandler
+    public void onEntityChangeBlockEvent(final EntityChangeBlockEvent event) {
+        if(event.getBlock().getType() != Material.WATER_CAULDRON) {
+            return;
+        }
+
+        CauldronManager.getInstance().removeDyedCauldron(event.getBlock());
+    }
 
     @EventHandler
     public void onPlayerInteractEvent(final PlayerInteractEvent event) {
