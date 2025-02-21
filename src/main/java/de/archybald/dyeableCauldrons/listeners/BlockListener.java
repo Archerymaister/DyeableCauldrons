@@ -13,9 +13,12 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockExplodeEvent;
 import org.bukkit.event.block.BlockPistonExtendEvent;
 import org.bukkit.event.block.BlockPistonRetractEvent;
 import org.bukkit.event.block.CauldronLevelChangeEvent;
+import org.bukkit.event.entity.EntityChangeBlockEvent;
+import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.ItemStack;
@@ -24,6 +27,29 @@ import java.util.List;
 import java.util.Optional;
 
 public class BlockListener implements Listener {
+
+    @EventHandler
+    public void onBlockExplodeEvent(final BlockExplodeEvent event) {
+        event.blockList().stream()
+            .filter(block -> block.getType() == Material.WATER_CAULDRON)
+            .forEach(CauldronManager.getInstance()::removeDyedCauldron);
+    }
+
+    @EventHandler
+    public void onEntityChangeBlockEvent(final EntityChangeBlockEvent event) {
+        if(event.getBlock().getType() != Material.WATER_CAULDRON) {
+            return;
+        }
+
+        CauldronManager.getInstance().removeDyedCauldron(event.getBlock());
+    }
+
+    @EventHandler
+    public void onEntityExplodeEvent(final EntityExplodeEvent event) {
+        event.blockList().stream()
+            .filter(block -> block.getType() == Material.WATER_CAULDRON)
+            .forEach(CauldronManager.getInstance()::removeDyedCauldron);
+    }
 
     @EventHandler
     public void onPlayerInteractEvent(final PlayerInteractEvent event) {
@@ -102,8 +128,8 @@ public class BlockListener implements Listener {
             return;
         }
 
-        // Delete the dyed cauldron if the new block is not a cauldron
-        if(event.getNewState().getType() == Material.CAULDRON) {
+        // Delete the dyed cauldron if the new block is not a water cauldron
+        if(event.getNewState().getType() != Material.WATER_CAULDRON){
             CauldronManager.getInstance().removeDyedCauldron(event.getBlock());
             return;
         }
