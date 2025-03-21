@@ -1,8 +1,8 @@
 plugins {
     java
-    id("dev.projectshard.build.java-conventions") version "0.1.9"
-    id("dev.projectshard.build.distribution") version "0.1.9"
-    id("dev.projectshard.build.ci-cd") version "0.1.9"
+    id("dev.projectshard.build.java-conventions") version "0.2.0-SNAPSHOT"
+    id("dev.projectshard.build.distribution") version "0.2.0-SNAPSHOT"
+    id("dev.projectshard.build.pipelines") version "0.2.0-SNAPSHOT"
 }
 
 group = "de.cubenation"
