@@ -7,6 +7,6 @@ pluginManagement {
         maven("https://repo.projectshard.dev/repository/maven-public/")
     }
     plugins {
-        kotlin("jvm") version "2.2.20"
+        kotlin("jvm") version "2.2.21"
     }
 }
